@@ -1,5 +1,15 @@
+def load_word_list(word_list_file):
+    word_list = set()
 
-def play(player, word, word_list, debug):
+    with open(word_list_file) as f:
+        for line in f:
+            word = line.strip()
+            if len(word) != 5:
+                raise Exception("invalid word length in word list:" + word)
+            word_list.add(word)
+    return word_list
+
+def play_game(player, word, word_list, debug):
     guess_count = 0
     win = False
 
@@ -43,17 +53,6 @@ def play(player, word, word_list, debug):
         player.respond(yellow, green)
     return (win, guess_count)
 
-def load_word_list(word_list_file):
-    word_list = set()
-
-    with open(word_list_file) as f:
-        for line in f:
-            word = line.strip()
-            if len(word) != 5:
-                raise Exception("invalid word length in word list:" + word)
-            word_list.add(word)
-    return word_list
-
 
 def test_player(WordlePlayer, word_list_file, debug):
     word_list = load_word_list(word_list_file)
@@ -67,7 +66,7 @@ def test_player(WordlePlayer, word_list_file, debug):
 
     for word in word_list:
         player = WordlePlayer(word_list, debug)
-        [win, guess_count] = play(player, word, debug)
+        [win, guess_count] = play_game(player, word, debug)
 
         game_count += 1
         guess_count += guess_count
@@ -76,32 +75,3 @@ def test_player(WordlePlayer, word_list_file, debug):
 
         if debug:
             print(word, 'guess count:', guess_count, 'win:', win, 'total wins:', total_win_count, 'total guesses:', total_guess_count)
-
-
-    print(word, 'guess count:', guess_count, 'win:', win, 'total wins:', total_win_count, 'total guesses:', total_guess_count)
-
-
-
-class HumanPlayer:
-    def __init__(self, word_list, debug):
-        self.word_list = word_list
-        self.debug = debug
-
-    def guess(self):
-        return input("enter a guess: ")
-
-    def respond(self, yellow, green):
-        print("yellow:", yellow, "  green:", green)
-
-
-# make your own class and test either a single game or the entire dictionary
-
-# play a single game
-word_list = load_word_list('word_list.txt')
-player = HumanPlayer(word_list, 2)
-[win, guesses] = play(player, 'howdy', word_list, 2)
-print('win:', win, 'guesses', guesses)
-
-# run the entire game. better stats coming soon
-test_player(QWordleMaster, 'word_list.txt', 2)
-
