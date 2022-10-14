@@ -105,3 +105,7 @@ class Player:
         if self.debug > 2:
             for word in self.word_list:
                 print("  ", word)
+
+    # this is the guess method that should be overridden by the child class
+    def guess(self):
+        return input("enter a guess: ")
