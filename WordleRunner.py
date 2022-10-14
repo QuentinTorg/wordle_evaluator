@@ -1,3 +1,5 @@
+
+
 def load_word_list(word_list_file, word_len):
     word_list = set()
 
@@ -16,6 +18,9 @@ def load_word_list(word_list_file, word_len):
 # @param guess_limit Limit how many guesses a user can make before it loses (0 is infinite)
 # @param word_len expected word length
 def play_game(player, word, word_list, debug=0, guess_limit=0, word_len=5):
+    if debug:
+        print("Testing word:", word)
+
     if word not in word_list:
         raise Exception("Word must exist in word list")
 
@@ -25,6 +30,9 @@ def play_game(player, word, word_list, debug=0, guess_limit=0, word_len=5):
     while True:
         guess = player.guess()
         guess_count += 1
+
+        if debug:
+            print('Guess', guess_count, guess)
 
         if len(guess) != word_len:
             raise Exception("invalid word length")
@@ -59,6 +67,8 @@ def play_game(player, word, word_list, debug=0, guess_limit=0, word_len=5):
             else:
                 yellow += '_'
 
+        if debug > 1:
+            print("yellow:", yellow, "  green:", green)
         player.respond(yellow, green)
     return (win, guess_count)
 
@@ -77,13 +87,12 @@ def test_player(WordlePlayer, word_list_file, debug=0, guess_limit=0, word_len=5
     guess_count = 0
     win_count = 0
     game_count = 0
+    stats = []
 
     if not test_word_list:
         test_word_list = word_list
 
     for word in test_word_list:
-        if debug:
-            print(word)
         player = WordlePlayer(word_list, debug=debug, word_len=word_len)
         [win, guesses] = play_game(player, word, word_list, debug=debug, guess_limit=guess_limit, word_len=word_len)
 
@@ -92,7 +101,11 @@ def test_player(WordlePlayer, word_list_file, debug=0, guess_limit=0, word_len=5
         if win:
             win_count += 1
 
-        if debug:
-            print('word:', word, 'won:', win, ' guesses:', guesses, 'win count:', win_count, 'total guesses:', guess_count, 'game count:', game_count)
+        print('word:', word, ' won:', win, ' guesses:', guesses, ' win count:', win_count, ' total guesses:', guess_count, ' game count:', game_count, ' average guess rate', guess_count / game_count)
 
-    print('win count:', win_count, 'total guesses:', guess_count, 'game count:', game_count)
+        stats.append((word, guesses, win))
+
+    print("-------")
+    print("Results")
+    print('win count:', win_count, 'total guesses:', guess_count, 'game count:', game_count, 'average guess rate', guess_count / game_count)
+    return stats
