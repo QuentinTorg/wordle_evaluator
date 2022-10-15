@@ -12,13 +12,13 @@ class Player:
 
     # combine the new green info with what we already know
     @staticmethod
-    def combine_greens(green, old_green):
+    def combine_greens(last_guess, response, old_green):
         new_green = ''
-        for (old_green_letter, green_letter) in zip(old_green, green):
+        for (letter, resp_letter, old_green_letter) in zip(last_guess, response, old_green):
             if old_green_letter != '_':
                 new_green += old_green_letter
-            elif green_letter != '_':
-                new_green += green_letter
+            elif resp_letter == 'g':
+                new_green += letter
             else:
                 new_green += '_'
         return new_green
@@ -43,16 +43,17 @@ class Player:
         return removed_words
 
     # count how many of each letter are expected
-    def update_letter_counts(self, yellow, green):
-        tested_letters = set()
-        for letter in self.last_guess:
-            # track if the letter has been counted already
-            if letter in tested_letters:
-                continue
-            tested_letters.add(letter)
+    def update_letter_counts(self, response, last_guess):
+        resp_counts = dict()
+        guess_counts = dict()
 
-            response_count = yellow.count(letter) + green.count(letter)
-            guess_count = self.last_guess.count(letter)
+        for (resp_letter, letter) in zip(response, last_guess):
+            guess_counts[letter] = guess_counts.get(letter, 0) + 1
+            if resp_letter != '_':
+                resp_counts[letter] = resp_counts.get(letter, 0) + 1
+
+        for (letter, guess_count) in guess_counts.items():
+            response_count = resp_counts.get(letter, 0)
 
             # can only set the max if any quantity of the letter was gray
             if guess_count > response_count:
@@ -84,18 +85,19 @@ class Player:
 
         return removed_words
 
-    def respond(self, yellow, new_green):
+
+    def respond(self, response, last_guess):
         # update how many letters must exist in the word after the new guess
         # must use new green because it is coupled with the info from yellow
-        self.update_letter_counts(yellow, new_green)
+        self.update_letter_counts(response, last_guess)
 
         # combine the new green letters with existing green letters
-        self.green = Player.combine_greens(new_green, self.green)
+        self.green = Player.combine_greens(last_guess, response, self.green)
 
         # letters that do not exist in the word are handled by functions above
         # this function only handles letters that exist where green should exist
         # words yellow letter in the wrong place
-        self.word_list -= Player.incorrect_index_words(self.green, self.last_guess, self.word_list)
+        self.word_list -= Player.incorrect_index_words(self.green, last_guess, self.word_list)
 
         # this removes words based on information given by yellow and gray letters
         self.word_list -= Player.strip_words_by_letter_count(self.word_list, self.min_letter_counts, self.max_letter_counts)

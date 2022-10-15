@@ -43,11 +43,13 @@ def play_game(player, word, word_list, debug=0, guess_limit=0, word_len=5):
             print("guess:", guess)
 
         green = ''
+        cnt_so_far = dict()
         for guess_letter, word_letter in zip(guess, word):
             if guess_letter == word_letter:
-                green += guess_letter
+                cnt_so_far[guess_letter] = cnt_so_far.get(guess_letter, 0) + 1
+                green += 'g'
             else:
-                green += "_"
+                green += '_'
 
         if green.count('_') == 0:
             win = True
@@ -57,19 +59,19 @@ def play_game(player, word, word_list, debug=0, guess_limit=0, word_len=5):
             # this is the last guess, did not win, skip populating yellow
             break
 
-        yellow = ''
+        yellow_and_green = ''
         for guess_letter, green_letter in zip(guess, green):
-            if green_letter != '_':
-                yellow += '_'
-            elif ((guess_letter in word) and
-                    (yellow.count(guess_letter) + green.count(guess_letter) < word.count(guess_letter))):
-                yellow += guess_letter
+            if green_letter == 'g':
+                yellow_and_green += green_letter
+            elif (guess_letter in word) and (cnt_so_far.get(guess_letter, 0) < word.count(guess_letter)):
+                yellow_and_green += 'y'
             else:
-                yellow += '_'
+                yellow_and_green += '_'
+            cnt_so_far[guess_letter] = cnt_so_far.get(guess_letter, 0) + 1
 
         if debug > 1:
-            print("yellow:", yellow, "  green:", green)
-        player.respond(yellow, green)
+            print("response:", yellow_and_green)
+        player.respond(yellow_and_green, guess)
     return (win, guess_count)
 
 # @param WordlePlayer The player class that will be tested
