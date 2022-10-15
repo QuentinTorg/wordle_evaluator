@@ -12,6 +12,14 @@ class RobotPlayer(Player):
         #for word in word_list:
         #    self.full_list[word] = [word, 0]
 
+'''
+notes:
+    - information about indexes that are solved is irrelivent
+    - it could be helpful to score the set of all words, ignornig the information in the known indexes
+        if this is done though, understand that max letter quantity information is gathered by having enough of the
+        same letter in it, so there is still potentially advantage to sticking within previous guesses
+    - if scoring words by quantity of other words containing that letter, it could be impro
+'''
     def guess(self):
         scored_words = self.score_words()
         #scored_words = self.positional_score_words()
@@ -62,22 +70,41 @@ class RobotPlayer(Player):
                     scored_letters.add(letter)
         return letter_scores;
 
+    def letter_qtys(self):
+        letter_qty = dict()
+        for word in self.word_list:
+            letters = set()
+            for letter in word:
+                if letter in letters:
+                    continue
+                letters.add(letter)
+                cnt = word.count(letter)
+                if cnt < 2:
+                    continue
+                score = letter_qty.get((letter, cnt), 0)
+                letter_qty[(letter, cnt)] = score + 1
+        return letter_qty
 
     def score_words(self):
+
         scores = []
         letter_scores = self.score_letters()
+        letter_qtys = self.letter_qtys()
         for word in self.word_list:
             score = 0
             letters_scored = set()
+            qty_counted = set()
             for (index, letter) in enumerate(word):
                 scale = 1
                 if letter in self.max_letter_counts:
                     # we can only gain position info from this letter, not letter info
-                    scale *= 0.5
+                    scale *= 0.25
 
                 if letter not in letters_scored:
                     score += letter_scores.get(letter, 0) * scale
                     letters_scored.add(letter)
+                elif letter not in qty_counted:
+                    score += letter_qtys[(letter, word.count(letter))]
             scores.append((score, word))
         scores.sort()
         if self.debug > 1:
