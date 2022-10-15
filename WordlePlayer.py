@@ -108,4 +108,5 @@ class Player:
 
     # this is the guess method that should be overridden by the child class
     def guess(self):
-        return input("enter a guess: ")
+        self.last_guess = input("enter a guess: ")
+        return self.last_guess
