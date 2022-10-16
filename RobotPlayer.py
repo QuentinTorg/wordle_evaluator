@@ -1,36 +1,69 @@
 from WordlePlayer import Player
+from WordleRunner import make_response
+import copy
 
 class RobotPlayer(Player):
     alphabet = 'abcdefghijklmnopqrstuvwxyz'
     first_guess = None
+    #first_guess = 'soare'
 
     def __init__(self, word_list, debug=0, word_len=5):
         super().__init__(word_list, debug=debug, word_len=word_len)
         self.last_guess = RobotPlayer.first_guess
+        self.first_guess = True
 
-        #self.full_list = dict()
-        #for word in word_list:
-        #    self.full_list[word] = [word, 0]
 
-'''
-notes:
-    - information about indexes that are solved is irrelivent
-    - it could be helpful to score the set of all words, ignornig the information in the known indexes
-        if this is done though, understand that max letter quantity information is gathered by having enough of the
-        same letter in it, so there is still potentially advantage to sticking within previous guesses
-    - if scoring words by quantity of other words containing that letter, it could be impro
-'''
+#notes:
+#    - information about indexes that are solved is irrelivent
+#    - it could be helpful to score the set of all words, ignornig the information in the known indexes
+#        if this is done though, understand that max letter quantity information is gathered by having enough of the
+#        same letter in it, so there is still potentially advantage to sticking within previous guesses
+#    - if scoring words by quantity of other words containing that letter, it could be impro
     def guess(self):
-        scored_words = self.score_words()
-        #scored_words = self.positional_score_words()
-        #scored_words = self.combined_score_words()
-        self.last_guess = scored_words[-1][1]
 
-        if (not RobotPlayer.first_guess):
+        if not self.first_guess or not RobotPlayer.first_guess:
+            scored_words = self.score_words()
+            #scored_words = self.score_words_by_response()
+            #scored_words = self.positional_score_words()
+            #scored_words = self.combined_score_words()
+            self.last_guess = scored_words[-1][1]
+        else:
+            self.last_guess = RobotPlayer.first_guess
+            self.first_guess = False
+
+        if not RobotPlayer.first_guess:
             print("New first guess!!!!!:", self.last_guess)
             RobotPlayer.first_guess = self.last_guess
+            self.first_guess = False
 
         return self.last_guess
+
+    def score_words_by_response(self):
+        # see if each remaining word were the goal word, how many remaining words would exist
+        avgs = []
+        for guess in self.word_list:
+            val_sum = 0
+            cnt = 0
+            if self.debug > 1:
+                print('scoring guess', guess)
+            for word in self.word_list:
+                cnt += 1
+                if cnt % 1000 == 0:
+                    print(cnt)
+                player = copy.deepcopy(self)
+                player.debug=0
+
+                response = make_response(word, guess)
+                player.respond(response, guess)
+                val_sum += len(player.word_list)
+            avgs.append((val_sum / len(self.word_list), guess))
+        avgs.sort()
+        if self.debug > 1:
+            for word in avgs:
+                print(word)
+        return avgs
+
+
 
     def positional_score_letters(self):
         letter_scores = []

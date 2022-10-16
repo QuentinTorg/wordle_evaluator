@@ -5,7 +5,6 @@ class Player:
         self.debug = debug
         self.max_letter_counts = dict()
         self.min_letter_counts = dict()
-        self.last_guess = None
         self.green = ''
         for i in range(word_len):
             self.green += '_'
@@ -78,10 +77,11 @@ class Player:
                 word_letter_count = word.count(letter)
                 if word_letter_count < min_letter_count:
                     removed_words.add(word)
-                    continue
+                    break
                 max_letter_count = max_letter_counts.get(letter, len(word))
                 if word_letter_count > max_letter_count:
                     removed_words.add(word)
+                    break
 
         return removed_words
 
