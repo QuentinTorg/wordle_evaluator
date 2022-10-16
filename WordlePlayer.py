@@ -32,6 +32,8 @@ class Player:
         removed_words = set()
         for (index, (green_letter, last_guess_letter)) in enumerate(zip(green, last_guess)):
             for word in word_list:
+                if word in removed_words:
+                    continue
                 if green_letter == '_' and word[index] == last_guess_letter:
                     # remove a word if it has a letter in a known wrong index
                     removed_words.add(word)
