@@ -152,7 +152,7 @@ class RobotPlayer(Player):
             for (index, letter) in enumerate(word):
                 if letter not in letters_scored:
                     score += letter_scores.get(letter, 0)
-                    score += duplicate_letter_score.get(letter, 0)
+                    score += duplicate_letter_score.get(letter, 0) * 5
                     letters_scored.add(letter)
                 elif letter not in qty_counted:
                     score += letter_qtys[(letter, word.count(letter))] * 0.5
