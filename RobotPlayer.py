@@ -26,7 +26,28 @@ class RobotPlayer(Player):
             #scored_words = self.score_words_by_response()
             #scored_words = self.positional_score_words()
             #scored_words = self.combined_score_words()
-            self.last_guess = scored_words[-1][1]
+
+
+            if False and len(scored_words) > 1 and scored_words[-1][0] == scored_words[-2][0]:
+                high_score = scored_words[-1][0]
+                letter_scores = self.positional_score_letters()
+                positional_scored_words = []
+                for (score, word) in scored_words[::-1]:
+                    if score != high_score:
+                        break
+                    score = 0
+                    for (index, letter) in enumerate(word):
+                        if self.green[index] == '_':
+                            score += letter_scores[index][letter]
+                    positional_scored_words.append((score, word))
+                positional_scored_words.sort(reverse=True)
+                if self.debug > 1:
+                    print('!!!!!!!!!using positional score')
+                    for word in positional_scored_words:
+                        print(word)
+                self.last_guess = positional_scored_words[-1][1]
+            else:
+                self.last_guess = scored_words[-1][1]
         else:
             self.last_guess = RobotPlayer.first_guess
             self.first_guess = False
@@ -123,21 +144,18 @@ class RobotPlayer(Player):
         scores = []
         letter_scores = self.score_letters()
         letter_qtys = self.letter_qtys()
+        duplicate_letter_score = self.score_single_missing_char_letters()
         for word in self.word_list:
             score = 0
             letters_scored = set()
             qty_counted = set()
             for (index, letter) in enumerate(word):
-                scale = 1
-                if letter in self.max_letter_counts:
-                    # we can only gain position info from this letter, not letter info
-                    scale *= 0.25
-
                 if letter not in letters_scored:
-                    score += letter_scores.get(letter, 0) * scale
+                    score += letter_scores.get(letter, 0)
+                    score += duplicate_letter_score.get(letter, 0)
                     letters_scored.add(letter)
                 elif letter not in qty_counted:
-                    score += letter_qtys[(letter, word.count(letter))]
+                    score += letter_qtys[(letter, word.count(letter))] * 0.5
             scores.append((score, word))
         scores.sort()
         if self.debug > 1:
@@ -169,6 +187,30 @@ class RobotPlayer(Player):
             for word in scores:
                 print(word)
         return scores;
+
+    # make a score per letter that can possibly make it easier to guess a word if it is the only one missing
+    def score_single_missing_char_letters(self):
+        missing_char_words = dict()
+        for word in self.word_list:
+            # make the new word
+            for index in range(len(word)):
+                if self.green[index] != '_':
+                    continue
+
+                missing_char_word = word[:index] + '_' + word[index + 1:]
+
+                if missing_char_word not in missing_char_words:
+                    missing_char_words[missing_char_word] = [word[index]]
+                else:
+                    missing_char_words[missing_char_word].append(word[index])
+
+        char_cnts = dict()
+        for (missing_char_word, chars) in missing_char_words.items():
+            if len(chars) > 1:
+                for char in chars:
+                    char_cnts[char] = char_cnts.get(char, 0) + 1
+
+        return char_cnts;
 
 #    def trim_full_list(self):
 #        (cut_words, words) = self.full_list.items()
