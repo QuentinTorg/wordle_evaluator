@@ -11,6 +11,32 @@ def load_word_list(word_list_file, word_len):
             word_list.add(word)
     return word_list
 
+def make_response(word, guess):
+    green = ''
+    letter_cnt = dict()
+    for guess_letter, word_letter in zip(guess, word):
+        if guess_letter == word_letter:
+            letter_cnt[guess_letter] = letter_cnt.get(guess_letter, 0) + 1
+            green += 'g'
+        else:
+            green += '_'
+
+    if green.count('_') == 0:
+        return (word, True)
+
+    yellow_and_green = ''
+    for guess_letter, green_letter in zip(guess, green):
+        if green_letter == 'g':
+            yellow_and_green += green_letter
+        elif (guess_letter in word) and (letter_cnt.get(guess_letter, 0) < word.count(guess_letter)):
+            yellow_and_green += 'y'
+            letter_cnt[guess_letter] = letter_cnt.get(guess_letter, 0) + 1
+        else:
+            yellow_and_green += '_'
+
+    return (yellow_and_green, False)
+
+
 # @param player The player object that will be tested
 # @param word The word that the player is being tested against
 # @param word_list All possible words that could be
@@ -42,34 +68,12 @@ def play_game(player, word, word_list, debug=0, guess_limit=0, word_len=5):
         if debug > 1:
             print("guess:", guess)
 
-        green = ''
-        cnt_so_far = dict()
-        for guess_letter, word_letter in zip(guess, word):
-            if guess_letter == word_letter:
-                cnt_so_far[guess_letter] = cnt_so_far.get(guess_letter, 0) + 1
-                green += 'g'
-            else:
-                green += '_'
+        (yellow_and_green, win) = make_response(word, guess)
 
-        if green.count('_') == 0:
-            win = True
+        if win or (guess_limit != 0 and guess_count >= guess_limit):
             break
 
-        if guess_limit != 0 and guess_count >= guess_limit:
-            # this is the last guess, did not win, skip populating yellow
-            break
-
-        yellow_and_green = ''
-        for guess_letter, green_letter in zip(guess, green):
-            if green_letter == 'g':
-                yellow_and_green += green_letter
-            elif (guess_letter in word) and (cnt_so_far.get(guess_letter, 0) < word.count(guess_letter)):
-                yellow_and_green += 'y'
-            else:
-                yellow_and_green += '_'
-            cnt_so_far[guess_letter] = cnt_so_far.get(guess_letter, 0) + 1
-
-        if debug > 1:
+        if debug:
             print("response:", yellow_and_green)
         player.respond(yellow_and_green, guess)
     return (win, guess_count)
