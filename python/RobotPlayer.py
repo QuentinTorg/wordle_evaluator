@@ -5,7 +5,6 @@ import copy
 class RobotPlayer(Player):
     alphabet = 'abcdefghijklmnopqrstuvwxyz'
     first_guess = None
-    #first_guess = 'soare'
 
     def __init__(self, word_list, debug=0, word_len=5):
         super().__init__(word_list, debug=debug, word_len=word_len)

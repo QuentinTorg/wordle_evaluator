@@ -84,11 +84,12 @@ def play_game(player, word, word_list, debug=0, guess_limit=0, word_len=5):
 # @param guess_limit Limit how many guesses a user can make before it loses (0 is infinite)
 # @param word_len expected word length
 # @param test_word_list An optional smaller list of words that the player will be tested against. Will test against entire list otherwise
-def test_player(WordlePlayer, word_list_file, debug=0, guess_limit=0, word_len=5, test_word_list=None):
-    word_list = load_word_list(word_list_file, word_len)
+def test_player(WordlePlayer, answers_word_list, allowed_guesses_word_list=set(), debug=0, guess_limit=0, word_len=5, test_word_list=None):
+    all_words = answers_word_list + allowed_guesses_word_list
+    #word_list = load_word_list(word_list_file, word_len)
 
     if debug:
-        print("word list contains", len(word_list), "words")
+        print("word list contains", len(all_words), "words")
 
     guess_count = 0
     win_count = 0
@@ -96,22 +97,53 @@ def test_player(WordlePlayer, word_list_file, debug=0, guess_limit=0, word_len=5
     stats = []
 
     if not test_word_list:
-        test_word_list = word_list
+        test_word_list = solution_word_list
 
     for word in test_word_list:
-        player = WordlePlayer(word_list, debug=debug, word_len=word_len)
-        [win, guesses] = play_game(player, word, word_list, debug=debug, guess_limit=guess_limit, word_len=word_len)
+        player = WordlePlayer(all_words, debug=debug, word_len=word_len)
+        [win, guesses] = play_game(player, word, all_words, debug=debug, guess_limit=guess_limit, word_len=word_len)
 
         game_count += 1
-        guess_count += guesses
         if win:
+            guess_count += guesses
             win_count += 1
 
-        print('word:', word, ' won:', win, ' guesses:', guesses, ' win count:', win_count, ' total guesses:', guess_count, ' game count:', game_count, ' average guess rate', guess_count / game_count)
+        print('word:', word, ' won:', win, ' guesses:', guesses, ' win count:', win_count, ' total guesses:', guess_count, ' game count:', game_count, ' average guess rate', guess_count / win_count)
 
         stats.append((word, guesses, win))
 
     print("-------")
     print("Results")
-    print('win count:', win_count, 'total guesses:', guess_count, 'game count:', game_count, 'average guess rate', guess_count / game_count)
+    print('win count:', win_count, ' win rate', win_count / game_count, 'total guesses:', guess_count, 'game count:', game_count, 'average guess rate', guess_count / win_count)
     return stats
+
+#def help_play(WordlePlayer, word_list_file, debug=0, guess_limit=0, word_len=5):
+#    word_list = load_word_list(word_list_file, word_len)
+#
+#    if debug:
+#        print("word list contains", len(word_list), "words")
+#    player = WordlePlayer(word_list, debug=debug, word_len=word_len)
+#
+#    guess_count = 0
+#    while True:
+#        guess = player.guess()
+#        guess_count += 1
+#
+#        print('Guggested guess:', guess_count, guess)
+#        real_guess = input('enter new guess if you wish to override: ')
+#        if len(real_guess) == word_len:
+#            print('Overriding guess with', real_guess)
+#            guess = real_guess
+#        else:
+#            print('Using guess', guess)
+#
+#        response = ''
+#        while len(response) != word_len and (response.count('y') + response.count('g') + response.count('_') != word_len):
+#            response = input("Enter the wordle response. use '_' for gray, 'g' for green, 'y' for yellow: ")
+#
+##        if 'y' not in response and '_' not in response:
+#
+#
+#        player.respond(response, guess)
+#    return (win, guess_count)
+
