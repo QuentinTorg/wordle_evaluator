@@ -1,6 +1,12 @@
 
-
 #pragma once
+
+#include <map>
+#include <set>
+#include <string_view>
+#include <vector>
+
+#include <cstdint>
 
 namespace wordle
 {
@@ -19,10 +25,12 @@ using WordResponse = std::array<LetterResponse, word_len>;
 
 using LetterCounts = std::map<char, uint8_t>;
 
-using WordList = std::map<std::string, LetterCounts>;
+using WordList = std::map<std::string_view, LetterCounts>;
 
 // make a map of letter counts per letter in the given word
-LetterCounts get_letter_counts(const std::string& word);
+LetterCounts get_letter_counts(const std::string_view& word);
+
+WordList get_word_list(const std::vector<std::string_view>& words);
 
 template <size_t word_len>
 std::pair<LetterCounts, LetterCounts>
@@ -82,7 +90,7 @@ bool above_max_counts(const LetterCounts& word_counts, const LetterCounts& max_c
 //   If gray or yellow letter in response exists in the wrong index of word return false
 //   otherwise return true
 template <size_t word_len>
-bool invalid_letter_index(const std::string& word, const WordResponse<word_len>& response)
+bool invalid_letter_index(const std::string_view& word, const WordResponse<word_len>& response)
 {
     if (word.size() != response.size())
     {

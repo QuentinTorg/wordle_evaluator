@@ -1,15 +1,13 @@
 
-
+#include <wordle/utils.hh>
 
 #include <gtest/gtest.h>
-
-#include <wordle/utils.hh>
 
 using namespace wordle;
 
 TEST(get_letter_counts, empty)
 {
-    const std::string word("");
+    const std::string_view word("");
 
     const auto counts = get_letter_counts(word);
 
@@ -18,7 +16,7 @@ TEST(get_letter_counts, empty)
 
 TEST(get_letter_counts, trivial)
 {
-    const std::string word("aaaaa");
+    const std::string_view word("aaaaa");
 
     const auto counts = get_letter_counts(word);
 
@@ -28,7 +26,7 @@ TEST(get_letter_counts, trivial)
 
 TEST(get_letter_counts, real_word)
 {
-    const std::string word("tears");
+    const std::string_view word("tears");
 
     const auto counts = get_letter_counts(word);
 
@@ -40,9 +38,35 @@ TEST(get_letter_counts, real_word)
     EXPECT_EQ(counts.at('s'), std::count(word.begin(), word.end(), 's'));
 }
 
+TEST(get_word_list, empty)
+{
+    const auto words = get_word_list({});
+
+    ASSERT_EQ(words.size(), 0);
+}
+
+TEST(get_word_list, check_counts)
+{
+    const auto words = get_word_list({"aaaaa", "bbbbb", "ccccc"});
+
+    ASSERT_EQ(words.size(), 3);
+    ASSERT_EQ(words.at("aaaaa").at('a'), 5);
+    ASSERT_EQ(words.at("bbbbb").at('b'), 5);
+    ASSERT_EQ(words.at("ccccc").at('c'), 5);
+}
+
+TEST(get_word_list, duplicates)
+{
+    const auto words = get_word_list({"aaaaa", "bbbbb", "aaaaa"});
+
+    ASSERT_EQ(words.size(), 2);
+    ASSERT_EQ(words.at("aaaaa").at('a'), 5);
+    ASSERT_EQ(words.at("bbbbb").at('b'), 5);
+}
+
 TEST(get_min_max_counts, empty)
 {
-    const std::string guess{};
+    const std::string_view guess{};
     const WordResponse<0> response{};
 
     const auto [min_cnts, max_cnts] = get_min_max_letter_counts(response);
@@ -287,7 +311,7 @@ TEST(above_max_counts, missing)
 
 TEST(invalid_letter_index, empty)
 {
-    const std::string word{""};
+    const std::string_view word{""};
     const WordResponse<0> resp{};
 
     ASSERT_FALSE(invalid_letter_index(word, resp));
@@ -296,14 +320,14 @@ TEST(invalid_letter_index, empty)
 TEST(invalid_letter_index, size_mismatch)
 {
     {
-        const std::string word{"aa"};
+        const std::string_view word{"aa"};
         const WordResponse<1> resp{{{'a', Color::GRAY}}};
 
         ASSERT_ANY_THROW(invalid_letter_index(word, resp));
     }
 
     {
-        const std::string word{"a"};
+        const std::string_view word{"a"};
         const WordResponse<2> resp{{{'a', Color::GRAY}, {'a', Color::GRAY}}};
 
         ASSERT_ANY_THROW(invalid_letter_index(word, resp));
@@ -312,7 +336,7 @@ TEST(invalid_letter_index, size_mismatch)
 
 TEST(invalid_letter_index, green_valid)
 {
-    const std::string word{"a"};
+    const std::string_view word{"a"};
     const WordResponse<1> resp{{{'a', Color::GREEN}}};
 
     ASSERT_FALSE(invalid_letter_index(word, resp));
@@ -320,7 +344,7 @@ TEST(invalid_letter_index, green_valid)
 
 TEST(invalid_letter_index, green_invalid)
 {
-    const std::string word{"a"};
+    const std::string_view word{"a"};
     const WordResponse<1> resp{{{'b', Color::GREEN}}};
 
     ASSERT_TRUE(invalid_letter_index(word, resp));
@@ -328,7 +352,7 @@ TEST(invalid_letter_index, green_invalid)
 
 TEST(invalid_letter_index, gray_valid)
 {
-    const std::string word{"a"};
+    const std::string_view word{"a"};
     const WordResponse<1> resp{{{'b', Color::GRAY}}};
 
     ASSERT_FALSE(invalid_letter_index(word, resp));
@@ -336,7 +360,7 @@ TEST(invalid_letter_index, gray_valid)
 
 TEST(invalid_letter_index, gray_invalid)
 {
-    const std::string word{"a"};
+    const std::string_view word{"a"};
     const WordResponse<1> resp{{{'a', Color::GRAY}}};
 
     ASSERT_TRUE(invalid_letter_index(word, resp));
@@ -344,7 +368,7 @@ TEST(invalid_letter_index, gray_invalid)
 
 TEST(invalid_letter_index, yellow_valid)
 {
-    const std::string word{"a"};
+    const std::string_view word{"a"};
     const WordResponse<1> resp{{{'b', Color::YELLOW}}};
 
     ASSERT_FALSE(invalid_letter_index(word, resp));
@@ -352,7 +376,7 @@ TEST(invalid_letter_index, yellow_valid)
 
 TEST(invalid_letter_index, yellow_invalid)
 {
-    const std::string word{"a"};
+    const std::string_view word{"a"};
     const WordResponse<1> resp{{{'a', Color::YELLOW}}};
 
     ASSERT_TRUE(invalid_letter_index(word, resp));

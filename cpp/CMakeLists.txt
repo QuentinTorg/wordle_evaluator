@@ -37,7 +37,7 @@ endif()
 
 
 add_library(wordle_evaluator SHARED
-    src/wordle_evaluator.cc
+    src/evaluator.cc
     src/utils.cc
     )
 

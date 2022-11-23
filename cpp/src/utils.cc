@@ -1,20 +1,10 @@
 
-
-#include <string>
-#include <set>
-#include <map>
-
 #include "wordle/utils.hh"
-
-
-// - green letter definitely exists at the index
-// - gray or yellow letter definitely does not exist at index
-//
 
 namespace wordle
 {
 
-LetterCounts get_letter_counts(const std::string& word)
+LetterCounts get_letter_counts(const std::string_view& word)
 {
     LetterCounts counts;
     for (const auto& letter : word)
@@ -30,6 +20,18 @@ LetterCounts get_letter_counts(const std::string& word)
     }
 
     return counts;
+}
+
+WordList get_word_list(const std::vector<std::string_view>& words)
+{
+    WordList word_list{};
+
+    for (const auto& word : words)
+    {
+        word_list[word] = get_letter_counts(word);
+    }
+
+    return word_list;
 }
 
 // return false if any of the counts in word_counts are below the letter counts in min_counts
