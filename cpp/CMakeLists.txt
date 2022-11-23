@@ -38,7 +38,7 @@ endif()
 
 add_library(wordle_evaluator SHARED
     src/wordle_evaluator.cc
-    src/wordle_player.cc
+    src/utils.cc
     )
 
 target_include_directories(wordle_evaluator

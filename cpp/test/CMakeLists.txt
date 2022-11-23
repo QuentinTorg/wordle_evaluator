@@ -1,7 +1,7 @@
 
 
 set(TEST_NAMES
-    player_tests)
+    utils_tests)
 
 foreach(TEST_NAME ${TEST_NAMES})
 

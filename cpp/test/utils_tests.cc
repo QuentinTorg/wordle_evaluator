@@ -2,11 +2,12 @@
 
 
 #include <gtest/gtest.h>
-#include <wordle/wordle_player.hh>
+
+#include <wordle/utils.hh>
 
 using namespace wordle;
 
-TEST(letter_counts, empty)
+TEST(get_letter_counts, empty)
 {
     const std::string word("");
 
@@ -15,7 +16,7 @@ TEST(letter_counts, empty)
     ASSERT_EQ(counts.size(), 0);
 }
 
-TEST(letter_counts, trivial)
+TEST(get_letter_counts, trivial)
 {
     const std::string word("aaaaa");
 
@@ -25,7 +26,7 @@ TEST(letter_counts, trivial)
     EXPECT_EQ(counts.at('a'), std::count(word.begin(), word.end(), 'a'));
 }
 
-TEST(letter_counts, real_word)
+TEST(get_letter_counts, real_word)
 {
     const std::string word("tears");
 
@@ -39,7 +40,7 @@ TEST(letter_counts, real_word)
     EXPECT_EQ(counts.at('s'), std::count(word.begin(), word.end(), 's'));
 }
 
-TEST(min_max_counts, empty)
+TEST(get_min_max_counts, empty)
 {
     const std::string guess{};
     const WordResponse<0> response{};
@@ -50,7 +51,7 @@ TEST(min_max_counts, empty)
     EXPECT_EQ(max_cnts.size(), 0);
 }
 
-TEST(min_max_counts, min_all_green)
+TEST(get_min_max_counts, min_all_green)
 {
     const WordResponse<5> response{{{'t', Color::GREEN},
                                     {'e', Color::GREEN},
@@ -68,7 +69,7 @@ TEST(min_max_counts, min_all_green)
     EXPECT_EQ(min_cnts.at('s'), 1);
 }
 
-TEST(min_max_counts, min_all_yellow)
+TEST(get_min_max_counts, min_all_yellow)
 {
     const WordResponse<5> response{{{'t', Color::YELLOW},
                                     {'e', Color::YELLOW},
@@ -86,7 +87,7 @@ TEST(min_max_counts, min_all_yellow)
     EXPECT_EQ(min_cnts.at('s'), 1);
 }
 
-TEST(min_max_counts, min_all_gray)
+TEST(get_min_max_counts, min_all_gray)
 {
     const WordResponse<5> response{{{'t', Color::GRAY},
                                     {'e', Color::GRAY},
@@ -99,7 +100,7 @@ TEST(min_max_counts, min_all_gray)
     EXPECT_EQ(min_cnts.size(), 0);
 }
 
-TEST(min_max_counts, min_mixed)
+TEST(get_min_max_counts, min_mixed)
 {
     const WordResponse<5> response{{{'t', Color::GRAY},
                                     {'e', Color::GREEN},
@@ -114,7 +115,7 @@ TEST(min_max_counts, min_mixed)
     EXPECT_EQ(min_cnts.at('a'), 1);
 }
 
-TEST(min_max_counts, max_all_green)
+TEST(get_min_max_counts, max_all_green)
 {
     const WordResponse<5> response{{{'t', Color::GREEN},
                                     {'e', Color::GREEN},
@@ -127,7 +128,7 @@ TEST(min_max_counts, max_all_green)
     EXPECT_EQ(max_cnts.size(), 0);
 }
 
-TEST(min_max_counts, max_all_yellow)
+TEST(get_min_max_counts, max_all_yellow)
 {
     const WordResponse<5> response{{{'t', Color::YELLOW},
                                     {'e', Color::YELLOW},
@@ -140,7 +141,7 @@ TEST(min_max_counts, max_all_yellow)
     EXPECT_EQ(max_cnts.size(), 0);
 }
 
-TEST(min_max_counts, max_all_gray)
+TEST(get_min_max_counts, max_all_gray)
 {
     const WordResponse<5> response{{{'t', Color::GRAY},
                                     {'e', Color::GRAY},
@@ -158,7 +159,7 @@ TEST(min_max_counts, max_all_gray)
     EXPECT_EQ(max_cnts.at('s'), 0);
 }
 
-TEST(min_max_counts, max_mixed_duplicate_partial)
+TEST(get_min_max_counts, max_mixed_duplicate_partial)
 {
     const WordResponse<5> response{{{'t', Color::GRAY},
                                     {'o', Color::YELLOW},
@@ -174,7 +175,7 @@ TEST(min_max_counts, max_mixed_duplicate_partial)
     EXPECT_EQ(max_cnts.at('s'), 0);
 }
 
-TEST(min_max_counts, max_mixed_duplicate_both)
+TEST(get_min_max_counts, max_mixed_duplicate_both)
 {
     const WordResponse<5> response{{{'t', Color::GRAY},
                                     {'o', Color::YELLOW},
@@ -189,7 +190,7 @@ TEST(min_max_counts, max_mixed_duplicate_both)
     EXPECT_EQ(max_cnts.at('s'), 0);
 }
 
-TEST(min_max_counts, max_mixed_duplicate_neither)
+TEST(get_min_max_counts, max_mixed_duplicate_neither)
 {
     const WordResponse<5> response{{{'t', Color::GREEN},
                                     {'o', Color::GRAY},
@@ -204,3 +205,155 @@ TEST(min_max_counts, max_mixed_duplicate_neither)
     EXPECT_EQ(max_cnts.at('s'), 0);
 }
 
+TEST(below_min_counts, empty)
+{
+    const LetterCounts word_cnts{};
+    const LetterCounts min_cnts{};
+
+    ASSERT_FALSE(below_min_counts(word_cnts, min_cnts));
+}
+
+TEST(below_min_counts, same_counts)
+{
+    const LetterCounts word_cnts{{'a', 1}};
+    const LetterCounts min_cnts{{'a', 1}};
+
+    ASSERT_FALSE(below_min_counts(word_cnts, min_cnts));
+}
+
+TEST(below_min_counts, higher_counts)
+{
+    const LetterCounts word_cnts{{'a', 2}};
+    const LetterCounts min_cnts{{'a', 1}};
+
+    ASSERT_FALSE(below_min_counts(word_cnts, min_cnts));
+}
+
+TEST(below_min_counts, lower_counts)
+{
+    const LetterCounts word_cnts{{'a', 1}};
+    const LetterCounts min_cnts{{'a', 2}};
+
+    ASSERT_TRUE(below_min_counts(word_cnts, min_cnts));
+}
+
+TEST(below_min_counts, missing)
+{
+    const LetterCounts word_cnts{};
+    const LetterCounts min_cnts{{'a', 1}};
+
+    ASSERT_TRUE(below_min_counts(word_cnts, min_cnts));
+}
+
+TEST(above_max_counts, empty)
+{
+    const LetterCounts word_cnts{};
+    const LetterCounts max_cnts{};
+
+    ASSERT_FALSE(above_max_counts(word_cnts, max_cnts));
+}
+
+TEST(above_max_counts, same_counts)
+{
+    const LetterCounts word_cnts{{'a', 1}};
+    const LetterCounts max_cnts{{'a', 1}};
+
+    ASSERT_FALSE(above_max_counts(word_cnts, max_cnts));
+}
+
+TEST(above_max_counts, higher_counts)
+{
+    const LetterCounts word_cnts{{'a', 2}};
+    const LetterCounts max_cnts{{'a', 1}};
+
+    ASSERT_TRUE(above_max_counts(word_cnts, max_cnts));
+}
+
+TEST(above_max_counts, lower_counts)
+{
+    const LetterCounts word_cnts{{'a', 1}};
+    const LetterCounts max_cnts{{'a', 2}};
+
+    ASSERT_FALSE(above_max_counts(word_cnts, max_cnts));
+}
+
+TEST(above_max_counts, missing)
+{
+    const LetterCounts word_cnts{};
+    const LetterCounts max_cnts{{'a', 1}};
+
+    ASSERT_FALSE(above_max_counts(word_cnts, max_cnts));
+}
+
+TEST(invalid_letter_index, empty)
+{
+    const std::string word{""};
+    const WordResponse<0> resp{};
+
+    ASSERT_FALSE(invalid_letter_index(word, resp));
+}
+
+TEST(invalid_letter_index, size_mismatch)
+{
+    {
+        const std::string word{"aa"};
+        const WordResponse<1> resp{{{'a', Color::GRAY}}};
+
+        ASSERT_ANY_THROW(invalid_letter_index(word, resp));
+    }
+
+    {
+        const std::string word{"a"};
+        const WordResponse<2> resp{{{'a', Color::GRAY}, {'a', Color::GRAY}}};
+
+        ASSERT_ANY_THROW(invalid_letter_index(word, resp));
+    }
+}
+
+TEST(invalid_letter_index, green_valid)
+{
+    const std::string word{"a"};
+    const WordResponse<1> resp{{{'a', Color::GREEN}}};
+
+    ASSERT_FALSE(invalid_letter_index(word, resp));
+}
+
+TEST(invalid_letter_index, green_invalid)
+{
+    const std::string word{"a"};
+    const WordResponse<1> resp{{{'b', Color::GREEN}}};
+
+    ASSERT_TRUE(invalid_letter_index(word, resp));
+}
+
+TEST(invalid_letter_index, gray_valid)
+{
+    const std::string word{"a"};
+    const WordResponse<1> resp{{{'b', Color::GRAY}}};
+
+    ASSERT_FALSE(invalid_letter_index(word, resp));
+}
+
+TEST(invalid_letter_index, gray_invalid)
+{
+    const std::string word{"a"};
+    const WordResponse<1> resp{{{'a', Color::GRAY}}};
+
+    ASSERT_TRUE(invalid_letter_index(word, resp));
+}
+
+TEST(invalid_letter_index, yellow_valid)
+{
+    const std::string word{"a"};
+    const WordResponse<1> resp{{{'b', Color::YELLOW}}};
+
+    ASSERT_FALSE(invalid_letter_index(word, resp));
+}
+
+TEST(invalid_letter_index, yellow_invalid)
+{
+    const std::string word{"a"};
+    const WordResponse<1> resp{{{'a', Color::YELLOW}}};
+
+    ASSERT_TRUE(invalid_letter_index(word, resp));
+}
