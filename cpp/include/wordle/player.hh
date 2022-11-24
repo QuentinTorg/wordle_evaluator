@@ -3,6 +3,8 @@
 
 #include "wordle/utils.hh"
 
+#include <iostream>
+
 namespace wordle
 {
 
@@ -11,7 +13,7 @@ class Player
 {
 public:
     Player(const WordList& solutions,
-           const std::vector<std::string_view>& valid_guesses,
+           const std::set<std::string>& valid_guesses,
            const uint8_t debug) :
         solutions_(solutions),
         valid_guesses_(valid_guesses),
@@ -19,7 +21,7 @@ public:
     {
     }
 
-    std::string_view guess() const
+    std::string guess()
     {
         if (solutions_.empty())
         {
@@ -32,6 +34,16 @@ public:
     void respond(const WordResponse<word_len>& response)
     {
         solutions_ = trim_list(solutions_, response);
+
+        if (debug_ > 2)
+        {
+            std::cout << "Remaining words\n";
+            for (const auto& [word, counts] : solutions_)
+            {
+                std::cout << "\t" << word << "\n";
+            }
+            std::cout << std::endl;
+        }
     }
 
     static constexpr size_t size()
@@ -41,7 +53,7 @@ public:
 
 protected:
     WordList solutions_;
-    std::vector<std::string_view> valid_guesses_;
+    std::set<std::string> valid_guesses_;
     const uint8_t debug_;
 };
 

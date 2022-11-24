@@ -218,12 +218,32 @@ TEST(make_response, known_edge_cases)
         EXPECT_EQ(response[3].second, Color::GREEN);
         EXPECT_EQ(response[4].second, Color::GREEN);
     }
+
+    {
+        constexpr std::string_view guess{"dines"};
+        constexpr std::string_view word{"nines"};
+
+        const auto response = make_response<guess.size()>(guess, word);
+
+        ASSERT_EQ(response.size(), guess.size());
+
+        for (size_t i = 0; i < guess.size(); ++i)
+        {
+            EXPECT_EQ(guess[i], response[i].first);
+        }
+
+        EXPECT_EQ(response[0].second, Color::GRAY);
+        EXPECT_EQ(response[1].second, Color::GREEN);
+        EXPECT_EQ(response[2].second, Color::GREEN);
+        EXPECT_EQ(response[3].second, Color::GREEN);
+        EXPECT_EQ(response[4].second, Color::GREEN);
+    }
 }
 
 TEST(play_game, trivial_player)
 {
-    std::vector<std::string_view> words{"aaaaa"};
-    const auto [count, win] = play_game<Player<5>>(words.front(),
+    std::set<std::string> words{"aaaaa"};
+    const auto [count, win] = play_game<Player<5>>(*std::begin(words),
                                                    get_word_list(words),
                                                    words,
                                                    0,
@@ -235,9 +255,9 @@ TEST(play_game, trivial_player)
 
 TEST(test_player, trivial_player)
 {
-    std::vector<std::string_view> words{"aaaaa"};
+    std::set<std::string> words{"aaaaa"};
     const auto [avg_guesses, win_rate] = test_player<Player<5>>(words,
-                                                                get_word_list(words),
+                                                                words,
                                                                 words,
                                                                 0,
                                                                 0);

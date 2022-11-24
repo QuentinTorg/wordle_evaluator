@@ -5,7 +5,7 @@
 
 #include <algorithm>
 #include <iostream>
-#include <vector>
+#include <set>
 
 namespace wordle
 {
@@ -74,7 +74,7 @@ WordResponse<word_len> make_response(const std::string_view& guess, const std::s
 template <typename PlayerT>
 std::pair<size_t, bool> play_game(const std::string_view& word,
                                   const WordList& solutions,
-                                  const std::vector<std::string_view>& valid_guesses,
+                                  const std::set<std::string>& valid_guesses,
                                   const size_t guess_limit,
                                   const uint8_t debug)
 {
@@ -111,6 +111,27 @@ std::pair<size_t, bool> play_game(const std::string_view& word,
 
         const auto response = make_response<PlayerT::size()>(guess, word);
 
+        if (debug > 1)
+        {
+            std::cout << "\t";
+            for (const auto& [letter, color] : response)
+            {
+                if (color == Color::GREEN)
+                {
+                    std::cout << "g";
+                }
+                else if (color == Color::YELLOW)
+                {
+                    std::cout << "y";
+                }
+                else if (color == Color::GRAY)
+                {
+                    std::cout << "_";
+                }
+            }
+            std::cout << std::endl;
+        }
+
         player.respond(response);
     }
 
@@ -118,23 +139,35 @@ std::pair<size_t, bool> play_game(const std::string_view& word,
 }
 
 template <typename PlayerT>
-std::pair<double, double> test_player(const std::vector<std::string_view>& test_words,
-                                    const WordList& solutions,
-                                    const std::vector<std::string_view>& valid_guesses,
-                                    const size_t guess_limit,
-                                    const uint8_t debug)
+std::pair<double, double> test_player(std::set<std::string> test_words,
+                                      std::set<std::string> solutions,
+                                      std::set<std::string> valid_guesses,
+                                      const size_t guess_limit,
+                                      const uint8_t debug)
 {
+    // for protection, add test words to solutions and add all solutions to the valid guesses list
+    solutions.insert(std::begin(test_words), std::end(test_words));
+    valid_guesses.insert(std::begin(solutions), std::end(solutions));
+
+    if (test_words.empty())
+    {
+        // test all answers if there are no specific test cases requested
+        test_words.insert(std::begin(solutions), std::end(solutions));
+    }
+
     if (debug)
     {
         std::cout << "testing player with " << test_words.size() << " words" << std::endl;
     }
+
+    const auto solutions_with_cnts = get_word_list(solutions);
 
     double avg_guesses = 0;
     size_t wins = 0;
     size_t games_played = 0;
     for (const auto& word : test_words)
     {
-        const auto [guesses, won] = play_game<PlayerT>(word, solutions, valid_guesses, guess_limit, debug);
+        const auto [guesses, won] = play_game<PlayerT>(word, solutions_with_cnts, valid_guesses, guess_limit, debug);
 
         ++games_played;
         if (won)
@@ -146,7 +179,11 @@ std::pair<double, double> test_player(const std::vector<std::string_view>& test_
         if (debug)
         {
             std::cout << "'" << word << "': " << (won ? "win " : "loss") << " with " << guesses << " guess" << (guesses > 1 ? "es" : "");
-            std::cout << " (totals: avg_guesses:" << avg_guesses << " win_rate:" << static_cast<double>(wins)/games_played << std::endl;
+            std::cout << " (totals: average guesses:" << avg_guesses << " win rate:" << static_cast<double>(wins)/games_played << " in " << games_played << " games" << std::endl;
+            if (debug > 1)
+            {
+                std::cout << std::endl;
+            }
         }
     }
 

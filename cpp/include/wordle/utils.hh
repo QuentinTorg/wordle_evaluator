@@ -3,8 +3,10 @@
 
 #include <map>
 #include <set>
+#include <string>
 #include <string_view>
-#include <vector>
+#include <set>
+#include <iostream>
 
 #include <cstdint>
 
@@ -25,12 +27,12 @@ using WordResponse = std::array<LetterResponse, word_len>;
 
 using LetterCounts = std::map<char, uint8_t>;
 
-using WordList = std::map<std::string_view, LetterCounts>;
+using WordList = std::map<std::string, LetterCounts>;
 
 // make a map of letter counts per letter in the given word
 LetterCounts get_letter_counts(const std::string_view& word);
 
-WordList get_word_list(const std::vector<std::string_view>& words);
+WordList get_word_list(const std::set<std::string>& words);
 
 template <size_t word_len>
 std::pair<LetterCounts, LetterCounts>
@@ -130,7 +132,7 @@ WordList trim_list(const WordList& words, const WordResponse<word_len>& response
             continue;
         }
 
-        if (above_max_counts(counts, min_cnts))
+        if (above_max_counts(counts, max_cnts))
         {
             continue;
         }

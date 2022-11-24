@@ -22,7 +22,7 @@ LetterCounts get_letter_counts(const std::string_view& word)
     return counts;
 }
 
-WordList get_word_list(const std::vector<std::string_view>& words)
+WordList get_word_list(const std::set<std::string>& words)
 {
     WordList word_list{};
 

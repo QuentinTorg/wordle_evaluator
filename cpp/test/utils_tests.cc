@@ -381,3 +381,34 @@ TEST(invalid_letter_index, yellow_invalid)
 
     ASSERT_TRUE(invalid_letter_index(word, resp));
 }
+
+TEST(trim_list, real_words)
+{
+    {
+        const auto orig_words = get_word_list({"aback", "abbey"});
+        const WordResponse<5> response{{{'a', Color::GREEN},
+                                        {'b', Color::GREEN},
+                                        {'a', Color::GRAY},
+                                        {'c', Color::GRAY},
+                                        {'k', Color::GRAY}}};
+
+        const auto remain_words = trim_list(orig_words, response);
+
+        ASSERT_EQ(remain_words.size(), 1);
+        ASSERT_EQ(remain_words.count("abbey"), 1);
+    }
+
+    {
+        const auto orig_words = get_word_list({"aback", "aahed"});
+        const WordResponse<5> response{{{'a', Color::GREEN},
+                                        {'a', Color::YELLOW},
+                                        {'h', Color::GRAY},
+                                        {'e', Color::GRAY},
+                                        {'d', Color::GRAY}}};
+
+        const auto remain_words = trim_list(orig_words, response);
+
+        ASSERT_EQ(remain_words.size(), 1);
+        ASSERT_EQ(remain_words.count("aback"), 1);
+    }
+}
