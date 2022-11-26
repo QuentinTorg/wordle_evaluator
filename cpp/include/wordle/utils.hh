@@ -1,12 +1,14 @@
 
 #pragma once
 
+#include <nlohmann/json.hpp>
+
+#include <iostream>
 #include <map>
 #include <set>
 #include <string>
 #include <string_view>
-#include <set>
-#include <iostream>
+#include <vector>
 
 #include <cstdint>
 
@@ -28,6 +30,13 @@ using WordResponse = std::array<LetterResponse, word_len>;
 using LetterCounts = std::map<char, uint8_t>;
 
 using WordList = std::map<std::string, LetterCounts>;
+
+struct Result
+{
+    std::string word;
+    std::vector<std::string> guesses;
+    bool win;
+};
 
 // make a map of letter counts per letter in the given word
 LetterCounts get_letter_counts(const std::string_view& word);

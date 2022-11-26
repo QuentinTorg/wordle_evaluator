@@ -1,7 +1,6 @@
 
 #include <wordle/evaluator.hh>
 #include <wordle/player.hh>
-#include <wordle/smart_player.hh>
 
 #include <gtest/gtest.h>
 
@@ -243,27 +242,31 @@ TEST(make_response, known_edge_cases)
 TEST(play_game, trivial_player)
 {
     std::set<std::string> words{"aaaaa"};
-    const auto [count, win] = play_game<Player<5>>(*std::begin(words),
-                                                   get_word_list(words),
-                                                   words,
-                                                   0,
-                                                   0);
+    const auto [word, guesses, win] = play_game<Player<5>>(*std::begin(words),
+                                                           get_word_list(words),
+                                                           words,
+                                                           0,
+                                                           0);
 
     ASSERT_TRUE(win);
-    ASSERT_EQ(count, 1);
+    ASSERT_EQ(word, "aaaaa");
+    ASSERT_EQ(guesses.size(), 1);
 }
 
 TEST(test_player, trivial_player)
 {
     std::set<std::string> words{"aaaaa"};
-    const auto [avg_guesses, win_rate] = test_player<Player<5>>(words,
-                                                                words,
-                                                                words,
-                                                                0,
-                                                                0);
+    const auto results = test_player<Player<5>>(words,
+                                                words,
+                                                words,
+                                                0,
+                                                1,
+                                                0);
 
-    ASSERT_EQ(avg_guesses, 1);
-    ASSERT_EQ(win_rate, 1);
+    ASSERT_EQ(results.size(), 1);
+    ASSERT_TRUE(results[0].win);
+    ASSERT_EQ(results[0].guesses.size(), 1);
+    ASSERT_EQ(results[0].word, "aaaaa");
 }
 
 
